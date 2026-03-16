@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Szegregáció, integráció, inklúzió – B változat</title>
+  <style>
+    :root {
+      --bg: #f4f7f4;
+      --card: #ffffff;
+      --primary: #2f5f8f;
+      --primary-dark: #1d4368;
+      --text: #1f2933;
+      --muted: #5b6875;
+      --border: #d7e0da;
+      --correct: #e8f7ee;
+      --correct-border: #5aa469;
+      --wrong: #fdeeee;
+      --wrong-border: #d96b6b;
+      --info: #eef5ff;
+      --shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #eef4fa 0%, #f8faf8 100%);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+    .hero, .question-card, .result-card, .instructions {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+    .hero {
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      color: var(--primary-dark);
+      font-size: 2rem;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+    .instructions {
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      background: var(--info);
+    }
+    .questions {
+      display: grid;
+      gap: 16px;
+    }
+    .question-card {
+      padding: 20px;
+    }
+    .question-title {
+      font-size: 1.08rem;
+      font-weight: 700;
+      margin: 0 0 14px;
+      color: var(--primary-dark);
+    }
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+    .option {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fbfcfb;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+    .option:hover {
+      border-color: var(--primary);
+      background: #f6faff;
+    }
+    .option input {
+      margin-top: 3px;
+      accent-color: var(--primary);
+      transform: scale(1.1);
+      cursor: pointer;
+    }
+    .controls {
+      position: sticky;
+      bottom: 0;
+      padding-top: 18px;
+      background: linear-gradient(180deg, rgba(248,250,248,0) 0%, rgba(248,250,248,1) 35%);
+    }
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 16px 18px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: white;
+      background: var(--primary);
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: 0.2s ease;
+    }
+    button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+    .result-card {
+      margin-top: 24px;
+      padding: 22px;
+      display: none;
+    }
+    .result-card.show {
+      display: block;
+    }
+    .summary {
+      background: #f7faf7;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+    .summary h2 {
+      margin: 0 0 10px;
+      color: var(--primary-dark);
+    }
+    .summary p {
+      margin: 6px 0;
+    }
+    .feedback-list {
+      display: grid;
+      gap: 14px;
+    }
+    .feedback-item {
+      border-radius: 14px;
+      padding: 16px;
+      border: 1px solid var(--border);
+    }
+    .feedback-item.correct {
+      background: var(--correct);
+      border-color: var(--correct-border);
+    }
+    .feedback-item.wrong {
+      background: var(--wrong);
+      border-color: var(--wrong-border);
+    }
+    .feedback-item h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+    .feedback-item p {
+      margin: 4px 0;
+    }
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .pill.correct {
+      background: #d9f0e0;
+      color: #1f6b35;
+    }
+    .pill.wrong {
+      background: #f7d7d7;
+      color: #9b2c2c;
+    }
+    .muted {
+      color: var(--muted);
+    }
+    @media (max-width: 700px) {
+      h1 { font-size: 1.6rem; }
+      .hero, .question-card, .result-card, .instructions { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>Szegregáció, integráció, inklúzió – B változat</h1>
+      <p class="subtitle">Minden kérdésnél egyetlen legjobb választ jelölj meg, majd kattints az értékelés gombra.</p>
+    </section>
+
+    <section class="instructions">
+      <strong>Értékelés:</strong> a végén látható lesz a helyes és helytelen válaszok listája, a százalékos eredmény és az érdemjegy.<br>
+      <span class="muted">Osztályozás: 0–24% = 1, 25–39% = 2, 40–59% = 3, 60–79% = 4, 80–100% = 5.</span>
+    </section>
+
+    <form id="quizForm">
+      <div id="questions" class="questions"></div>
+      <div class="controls">
+        <button type="submit">Értékelés</button>
+      </div>
+    </form>
+
+    <section id="result" class="result-card"></section>
+  </div>
+
+  <script>
+    const quizData = [
+      {
+        question: "1. Melyik megfogalmazás írja le legpontosabban a szegregált nevelést?",
+        options: [
+          "Az egyéni különbségekkel rendelkező tanulók elkülönített nevelése-oktatása külön intézményben, csoportban vagy osztályban.",
+          "Az eltérő fejlődésű tanulók közös tanulása rugalmas követelményekkel és változatos munkaformákkal.",
+          "A különböző fejlettségű gyermekek ideiglenes csoportbontása egyes tantárgyi felzárkóztató foglalkozások idején.",
+          "A tanulók szabad áramlása a többségi és speciális intézmények között hivatalos szakértői döntés nélkül."
+        ],
+        answer: 0
+      },
+      {
+        question: "2. Melyik meghatározás kapcsolódik a WHO által idézett fogyatékosságfogalomhoz?",
+        options: [
+          "A normális emberi léthez szükséges tevékenységek végrehajtásának akadályozottsága vagy képtelensége.",
+          "Az iskolai teljesítmény minden tantárgyra kiterjedő, tartós és visszafordíthatatlan elmaradása.",
+          "Az a sajátos élethelyzet, amelyben a személy kizárólag külön intézményi környezetben képes fejlődni.",
+          "A közösségi normákhoz való alkalmazkodás átmeneti zavara, amely fejlesztés nélkül is megszűnik."
+        ],
+        answer: 0
+      },
+      {
+        question: "3. Az alábbiak közül melyik tartozik a bemutatott fogyatékosságtípusok közé?",
+        options: [
+          "Mozgásfogyatékosság.",
+          "Tanórai motivációhiány.",
+          "Vizsgaszorongásos állapot.",
+          "Átmeneti nyelvi elmaradás."
+        ],
+        answer: 0
+      },
+      {
+        question: "4. A kiemelt figyelmet igénylő gyermekek csoportjai között melyik jelenik meg a tananyagban?",
+        options: [
+          "Beilleszkedési, tanulási, magatartási nehézséggel küzdő gyermek, tanuló.",
+          "Kizárólag sporttehetség-programba bevont gyermek, tanuló.",
+          "Emelt óraszámban tanuló idegen nyelvi csoport tagja.",
+          "Kötelező felzárkóztató tanfolyamra beosztott vizsgázó."
+        ],
+        answer: 0
+      },
+      {
+        question: "5. Mi tekinthető a szegregáció egyik lehetséges előnyének?",
+        options: [
+          "Speciális környezet, kisebb létszám és a szükségletekhez igazított fejlesztés biztosítható.",
+          "Automatikusan megszünteti a későbbi társadalmi beilleszkedés valamennyi akadályát.",
+          "Lehetővé teszi, hogy a gyermek minden területen ugyanazt teljesítse, mint ép társai.",
+          "Mentesíti az intézményt a szakemberek közötti együttműködés megszervezésének feladata alól."
+        ],
+        answer: 0
+      },
+      {
+        question: "6. Melyik állítás fogalmazza meg a szegregáció egyik hátrányát?",
+        options: [
+          "A gyermek elszigetelődhet a társadalom fő áramától, ezért később nehezebb lehet a beilleszkedése.",
+          "A gyermek minden esetben elesik a személyre szabott fejlesztés és akadálymentesítés lehetőségétől.",
+          "A speciális intézményekben szerzett tudás szükségszerűen használhatatlanná válik a felnőttkorban.",
+          "A gyermek rövid idő után elveszíti az állapotának megfelelő tanulási tempó biztosításának esélyét."
+        ],
+        answer: 0
+      },
+      {
+        question: "7. Mikor lehet ma is indokolt a szegregált nevelés a bemutatott anyag szerint?",
+        options: [
+          "Ha a gyermek súlyos halmozott sérülése olyan egyéni haladást kíván, amely átlagos osztályban nem biztosítható.",
+          "Ha a szülő a közösségi együttműködést önmagában kevésbé tartja fontosnak a tantárgyi eredményeknél.",
+          "Ha az iskola ideiglenesen nem rendelkezik elegendő tanórai eszközzel a differenciált óraszervezéshez.",
+          "Ha a pedagógusok egységes követelményrendszert szeretnének kialakítani a tanulói csoport egészére nézve."
+        ],
+        answer: 0
+      },
+      {
+        question: "8. Mit jelent gyógypedagógiai értelemben az integráció?",
+        options: [
+          "A speciális nevelési szükségletű gyermekek vagy fiatalok beillesztését a nem fogyatékosok közé.",
+          "A többségi intézmények teljes szervezeti átalakítását valamennyi tanuló egyéni igényei szerint.",
+          "Az azonos diagnózisú tanulók elkülönített fejlesztését saját szakmai program alapján.",
+          "A nem fogyatékos tanulók időszakos részvételét speciális intézmények tanítási gyakorlatában."
+        ],
+        answer: 0
+      },
+      {
+        question: "9. Melyik integrációs forma az együttnevelés legegyszerűbb változata?",
+        options: [
+          "Lokális vagy fizikai integráció.",
+          "Teljes funkcionális integráció.",
+          "Szociális integráció.",
+          "Fordított integráció."
+        ],
+        answer: 0
+      },
+      {
+        question: "10. Mi jellemzi leginkább a lokális vagy fizikai integrációt?",
+        options: [
+          "Az SNI és az ép gyermekek közös épületben vannak, de közöttük tényleges kapcsolat nem alakul ki.",
+          "A gyermekek minden tevékenységben együtt vesznek részt, és azonos órarend szerint tanulnak egész nap.",
+          "Az eltérő csoportok csak alkalmi ünnepségeken találkoznak, intézményi közelség nélkül.",
+          "A speciális intézmény rendszeresen befogad nem fogyatékos tanulókat közös tanórai munkára."
+        ],
+        answer: 0
+      },
+      {
+        question: "11. Melyik leírás felel meg a szociális integrációnak?",
+        options: [
+          "A csoportokat tanórán kívüli időben tudatosan egyesítik, például játék, séta, étkezés vagy közös programok során.",
+          "A tanulók minden tanórán együtt vesznek részt, és ugyanazokat a követelményeket kapják módosítás nélkül.",
+          "A közös épület megléte önmagában elegendő feltétel a tartós, mély szociális kapcsolatok kialakulásához.",
+          "A nem fogyatékos gyermekek teljes tanítási napokra kerülnek át a speciális intézmények szervezetébe."
+        ],
+        answer: 0
+      },
+      {
+        question: "12. Mi jellemző a teljes funkcionális integrációra?",
+        options: [
+          "A sérült gyermek teljes időben az ép társai között van a többségi nevelési-oktatási intézményben.",
+          "A sérült gyermek külön csoportban tanul, és csak havonta egyszer vesz részt közös rendezvényen.",
+          "A sérült gyermek fejlesztő foglalkozások idején jelenik meg a többségi intézményben, máskor nem.",
+          "A sérült gyermek és az ép tanulók közös udvart használnak, de elkülönített napirend szerint működnek."
+        ],
+        answer: 0
+      },
+      {
+        question: "13. Melyik megfogalmazás írja le pontosan a spontán integrációt?",
+        options: [
+          "Előkészítés nélküli együttnevelés, amikor a többségi intézménynek sokszor nincs tudomása a gyermek sajátos nevelési igényéről.",
+          "Olyan tudatosan tervezett együttnevelés, amelyben a gyógypedagógus minden órán közösen tanít az osztálytanítóval.",
+          "A speciális és többségi intézmény közti fokozatos átmenet, amelyet a szülő és a szakértői bizottság együtt készít elő.",
+          "A tanórán kívüli közös programok rendszere, amely az integráció hivatalos első állomását jelenti."
+        ],
+        answer: 0
+      },
+      {
+        question: "14. Mit jelent a fordított integráció?",
+        options: [
+          "A speciális intézmény fogad be nem fogyatékos gyermeket.",
+          "A többségi intézmény kizárólag alkalmi látogatásokra fogad sajátos nevelési igényű tanulót.",
+          "A gyermek a többségi és speciális intézmény között heti rendszerességgel intézményt vált.",
+          "A pedagógusok a foglalkozások során felváltva veszik át egymás munkaköri feladatait."
+        ],
+        answer: 0
+      },
+      {
+        question: "15. Melyik állítás foglalja össze legjobban az inklúzió lényegét?",
+        options: [
+          "Az intézmény életét, módszereit és feltételeit úgy alakítják, hogy valamennyi érintett gyermek szükségleteit figyelembe vegyék.",
+          "A sajátos nevelési igényű tanulók számára külön osztályokat szerveznek, de közös ünnepségeket és kirándulásokat tartanak.",
+          "A pedagógusok elsősorban azonos tantervi tempót és egységes számonkérést alkalmaznak a különbségek csökkentésére.",
+          "Az intézmény csak azokhoz az igényekhez alkalmazkodik, amelyekhez külső szakember hivatalos javaslatot készített."
+        ],
+        answer: 0
+      },
+      {
+        question: "16. Miért az integrációnál magasabb szint az inklúzió?",
+        options: [
+          "Mert szemlélet-, módszer- és szervezeti szintű változást jelent, nem csupán együttlétet vagy beillesztést.",
+          "Mert teljesen kiváltja a gyógypedagógus és a pedagógus közötti együttműködés szükségességét.",
+          "Mert kizárólag a tanórán kívüli közösségi kapcsolatok erősítésére helyezi a hangsúlyt.",
+          "Mert minden esetben megszünteti a differenciálás és a rugalmas értékelés pedagógiai jelentőségét."
+        ],
+        answer: 0
+      },
+      {
+        question: "17. Melyik pedagógiai gyakorlat illeszkedik az inkluzív szemlélethez?",
+        options: [
+          "A differenciáló, önértékelésre is építő pedagógiai gyakorlat alkalmazása.",
+          "A kizárólag frontális óravezetés és az azonos feladatsorok következetes használata.",
+          "Az egyéni sajátosságokat háttérbe helyező, kizárólag tananyagcentrikus szervezés.",
+          "A tanulók közötti különbségek csökkentése egységes számonkérési renddel és merev normákkal."
+        ],
+        answer: 0
+      },
+      {
+        question: "18. Melyik tartozik az inklúzió fő jegyei közé?",
+        options: [
+          "A követelményeket rugalmasabbá teszik, és változatos értékelési eljárásokat alkalmaznak.",
+          "Az intézmény valamennyi csoportban azonos módszereket és teljesen változatlan elvárásokat tart fenn.",
+          "A konfliktushelyzetek megoldását elsődlegesen külső szakértőkre és intézményen kívüli szereplőkre bízzák.",
+          "A foglalkozások megszervezésénél tudatosan kerülik a munkaformák változatos kombinálását."
+        ],
+        answer: 0
+      },
+      {
+        question: "19. Melyik állítás jelenik meg az inklúzió fő jellemzői között?",
+        options: [
+          "A szülőket bevonják a folyamatba, és minden résztvevő fontosnak tartja a szociális befogadást.",
+          "A pedagógusok a problémamegoldást alapvetően külső szolgáltatók és szakmai szervezetek feladatának tekintik.",
+          "Az intézmény a változatos munkaformák helyett kizárólag a frontális szervezést részesíti előnyben.",
+          "A nevelőtestület csak részben azonosul a befogadó szemlélettel, hogy megmaradjon a korábbi struktúra."
+        ],
+        answer: 0
+      },
+      {
+        question: "20. Hogyan jelenik meg a gyógypedagógus szerepe az inkluzív gyakorlatban?",
+        options: [
+          "Partneri kapcsolatban, együttműködő és segítő szerepben dolgozik a pedagógusok mellett.",
+          "Önállóan, elkülönülten látja el az összes érintett gyermek oktatását a többségi pedagógus helyett.",
+          "Elsősorban ellenőrző-adminisztratív feladata van a tanórai követelmények egységesítésében.",
+          "Csak akkor kapcsolódik be a munkába, ha a gyermek már nem vehet részt semmilyen együttnevelési formában."
+        ],
+        answer: 0
+      }
+    ];
+
+    const questionsContainer = document.getElementById('questions');
+    const form = document.getElementById('quizForm');
+    const resultBox = document.getElementById('result');
+
+    function renderQuiz() {
+      quizData.forEach((item, index) => {
+        const card = document.createElement('section');
+        card.className = 'question-card';
+
+        const title = document.createElement('h2');
+        title.className = 'question-title';
+        title.textContent = item.question;
+        card.appendChild(title);
+
+        const optionsWrap = document.createElement('div');
+        optionsWrap.className = 'options';
+
+        item.options.forEach((option, optIndex) => {
+          const label = document.createElement('label');
+          label.className = 'option';
+
+          const input = document.createElement('input');
+          input.type = 'radio';
+          input.name = `question-${index}`;
+          input.value = optIndex;
+
+          const span = document.createElement('span');
+          span.textContent = option;
+
+          label.appendChild(input);
+          label.appendChild(span);
+          optionsWrap.appendChild(label);
+        });
+
+        card.appendChild(optionsWrap);
+        questionsContainer.appendChild(card);
+      });
+    }
+
+    function gradeFromPercent(percent) {
+      if (percent <= 24) return 1;
+      if (percent <= 39) return 2;
+      if (percent <= 59) return 3;
+      if (percent <= 79) return 4;
+      return 5;
+    }
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      let correctCount = 0;
+      const feedbackHtml = [];
+
+      quizData.forEach((item, index) => {
+        const selected = form.querySelector(`input[name="question-${index}"]:checked`);
+        const selectedIndex = selected ? Number(selected.value) : null;
+        const isCorrect = selectedIndex === item.answer;
+
+        if (isCorrect) correctCount++;
+
+        const userAnswerText = selectedIndex !== null
+          ? item.options[selectedIndex]
+          : 'Nem jelöltél választ.';
+
+        feedbackHtml.push(`
+          <div class="feedback-item ${isCorrect ? 'correct' : 'wrong'}">
+            <span class="pill ${isCorrect ? 'correct' : 'wrong'}">${isCorrect ? 'Helyes válasz' : 'Helytelen válasz'}</span>
+            <h3>${item.question}</h3>
+            <p><strong>A te válaszod:</strong> ${userAnswerText}</p>
+            <p><strong>Helyes válasz:</strong> ${item.options[item.answer]}</p>
+          </div>
+        `);
+      });
+
+      const percent = Math.round((correctCount / quizData.length) * 100);
+      const grade = gradeFromPercent(percent);
+
+      resultBox.innerHTML = `
+        <div class="summary">
+          <h2>Eredmény</h2>
+          <p><strong>Helyes válaszok száma:</strong> ${correctCount} / ${quizData.length}</p>
+          <p><strong>Százalékos eredmény:</strong> ${percent}%</p>
+          <p><strong>Érdemjegy:</strong> ${grade}</p>
+        </div>
+        <div class="feedback-list">
+          ${feedbackHtml.join('')}
+        </div>
+      `;
+
+      resultBox.classList.add('show');
+      resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    renderQuiz();
+  </script>
+</body>
+</html>
